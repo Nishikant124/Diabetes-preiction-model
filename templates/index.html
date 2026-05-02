@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diabetes Prediction (Single File)</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles to enhance Tailwind's base styling */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Subtle blue gradient background */
+            background-image: linear-gradient(to right bottom, #e0f7fa, #b2ebf2);
+        }
+        /* Custom styling for the BMI formula using LaTeX formatting */
+        .latex-formula {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+            display: block;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <!-- Main Application Card -->
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg p-6 sm:p-8 md:p-10 border border-gray-100/50 transform transition-all duration-500 ease-in-out">
+        <div class="flex flex-col items-center mb-8">
+            <div class="text-indigo-600 text-4xl mb-4 bg-indigo-50 p-3 rounded-full shadow-inner">
+                <!-- Icon for Health/Prediction -->
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-10 h-10">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75m9.375-3l.354.354a2.625 2.625 0 010 3.712l-.354.354m-9.375-3a3.375 3.375 0 11.279 6.75c.196.06.45.101.8.101h.438a2.625 2.625 0 010 3.712l-.354.354M9 12v2.25m3-3v3.75m3-3v5.25m3-3v6.75M9 6h.375a2.25 2.25 0 110 4.5H9" />
+                </svg>
+            </div>
+            <h1 class="text-3xl font-extrabold text-gray-900 text-center mb-2">SVM Diabetes Predictor</h1>
+            <p class="text-md text-gray-500 text-center">Input patient metrics for an instant risk assessment.</p>
+        </div>
+
+        <!-- Prediction Form -->
+        <form id="prediction-form" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Pregnancies -->
+                <div class="flex flex-col">
+                    <label for="pregnancies" class="text-sm font-medium text-gray-700 mb-1">Pregnancies (Count)</label>
+                    <input type="number" id="pregnancies" name="Pregnancies" min="0" required
+                           class="w-full p-3 border border-gray-300 rounded-xl focus:ring-4 focus:ring-indigo-200 focus:border-indigo-500 transition-colors duration-200 shadow-sm">
+                </div>
+                <!-- Glucose -->
+                <div class="flex flex-col">
+                    <label for="glucose" class="text-sm font-medium text-gray-700 mb-1">Glucose (mg/dL)</label>
+                    <input type="number" id="glucose" name="Glucose" min="0" required
+                           class="w-full p-3 border border-gray-300 rounded-xl focus:ring-4 focus:ring-indigo-200 focus:border-indigo-500 transition-colors duration-200 shadow-sm">
+                </div>
+                <!-- BloodPressure -->
+                <div class="flex flex-col">
+                    <label for="bloodPressure" class="text-sm font-medium text-gray-700 mb-1">Blood Pressure (mmHg)</label>
+                    <input type="number" id="bloodPressure" name="BloodPressure" min="0" required
+                           class="w-full p-3 border border-gray-300 rounded-xl focus:ring-4 focus:ring-indigo-200 focus:border-indigo-500 transition-colors duration-200 shadow-sm">
+                </div>
+                <!-- SkinThickness -->
+                <div class="flex flex-col">
+                    <label for="skinThickness" class="text-sm font-medium text-gray-700 mb-1">Skin Thickness (mm)</label>
+                    <input type="number" id="skinThickness" name="SkinThickness" min="0" required
+                           class="w-full p-3 border border-gray-300 rounded-xl focus:ring-4 focus:ring-indigo-200 focus:border-indigo-500 transition-colors duration-200 shadow-sm">
+                </div>
+                <!-- Insulin -->
+                <div class="flex flex-col">
+                    <label for="insulin" class="text-sm font-medium text-gray-700 mb-1">Insulin ($\mu U/ml$)</label>
+                    <input type="number" id="insulin" name="Insulin" min="0" required
+                           class="w-full p-3 border border-gray-300 rounded-xl focus:ring-4 focus:ring-indigo-200 focus:border-indigo-500 transition-colors duration-200 shadow-sm">
+                </div>
+                <!-- BMI -->
+                <div class="flex flex-col">
+                    <label for="bmi" class="text-sm font-medium text-gray-700 mb-1">BMI</label>
+                    <input type="number" step="0.1" id="bmi" name="BMI" min="0" required
+                           class="w-full p-3 border border-gray-300 rounded-xl focus:ring-4 focus:ring-indigo-200 focus:border-indigo-500 transition-colors duration-200 shadow-sm">
+                    <span class="latex-formula">$$kg/m^2$$</span>
+                </div>
+                <!-- DiabetesPedigreeFunction -->
+                <div class="flex flex-col">
+                    <label for="diabetesPedigreeFunction" class="text-sm font-medium text-gray-700 mb-1">Diabetes Pedigree Function</label>
+                    <input type="number" step="0.01" id="diabetesPedigreeFunction" name="DiabetesPedigreeFunction" min="0" required
+                           class="w-full p-3 border border-gray-300 rounded-xl focus:ring-4 focus:ring-indigo-200 focus:border-indigo-500 transition-colors duration-200 shadow-sm">
+                </div>
+                <!-- Age -->
+                <div class="flex flex-col">
+                    <label for="age" class="text-sm font-medium text-gray-700 mb-1">Age (Years)</label>
+                    <input type="number" id="age" name="Age" min="1" required
+                           class="w-full p-3 border border-gray-300 rounded-xl focus:ring-4 focus:ring-indigo-200 focus:border-indigo-500 transition-colors duration-200 shadow-sm">
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit"
+                    id="predict-button"
+                    class="w-full mt-6 bg-indigo-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:bg-indigo-700 transition-all duration-300 transform hover:scale-[1.01] active:scale-95">
+                Predict Risk
+            </button>
+        </form>
+
+        <!-- Result Card -->
+        <div id="result-card" class="mt-8 p-6 rounded-2xl text-center shadow-inner hidden border-2 transition-all duration-500 ease-out">
+            <h3 id="result-text" class="text-2xl font-extrabold mb-1"></h3>
+            <p id="result-description" class="mt-2 text-sm"></p>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-10 text-center text-xs text-gray-400">
+            <p>Powered by SVM Machine Learning Model. Consult a doctor for medical advice.</p>
+        </footer>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('prediction-form');
+            const resultCard = document.getElementById('result-card');
+            const resultText = document.getElementById('result-text');
+            const resultDescription = document.getElementById('result-description');
+            const predictButton = document.getElementById('predict-button');
+
+            // Tailwind utility class mapping for dynamic result styling
+            const classMap = {
+                loading: { bg: 'bg-indigo-50', text: 'text-indigo-600', border: 'border-indigo-300' },
+                highRisk: { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-400' },
+                lowRisk: { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-400' },
+                error: { bg: 'bg-yellow-100', text: 'text-yellow-700', border: 'border-yellow-400' }
+            };
+
+            /**
+             * Updates the result card's appearance based on the prediction state.
+             * @param {string} state - 'loading', 'highRisk', 'lowRisk', or 'error'.
+             */
+            function updateResultCard(state) {
+                // Base classes applied to the result card
+                const baseClasses = 'mt-8 p-6 rounded-2xl text-center shadow-inner border-2 transition-all duration-500 ease-out';
+                resultCard.className = baseClasses;
+                resultCard.classList.remove('hidden');
+
+                // Apply new state classes
+                const { bg, text, border } = classMap[state];
+                resultCard.classList.add(bg, text, border);
+            }
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                // 1. Prepare data
+                const formData = new FormData(form);
+                const data = {};
+                formData.forEach((value, key) => {
+                    // Convert value to float. Keys must match Python backend's expected names.
+                    data[key] = parseFloat(value);
+                });
+
+                // 2. Show loading state and disable button
+                updateResultCard('loading');
+                resultText.textContent = "Calculating your risk...";
+                resultDescription.textContent = "Please wait a moment while the SVM model processes the data.";
+                predictButton.disabled = true;
+                predictButton.textContent = "Predicting...";
+
+
+                try {
+                    // 3. Send prediction request to Flask backend
+                    // The path '/predict' is relative and should work if Flask is running
+                    const response = await fetch('/predict', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data),
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        // 4. Handle successful prediction
+                        if (result.prediction === 1) {
+                            updateResultCard('highRisk');
+                            resultText.textContent = "🚨 High Risk Detected";
+                            resultDescription.textContent = "The model indicates a high probability of diabetes. Consult a healthcare professional immediately for accurate diagnosis and guidance.";
+                        } else if (result.prediction === 0) {
+                            updateResultCard('lowRisk');
+                            resultText.textContent = "✨ Low Risk Detected";
+                            resultDescription.textContent = "The model suggests a low risk. Continue to maintain a healthy diet and active lifestyle.";
+                        } else {
+                            updateResultCard('error');
+                            resultText.textContent = "Prediction Error";
+                            resultDescription.textContent = "Invalid result from the server. Check server logs for details.";
+                        }
+                    } else {
+                        // 5. Handle server errors (e.g., status 400, 500)
+                        updateResultCard('error');
+                        resultText.textContent = "Server Error";
+                        resultDescription.textContent = result.error || "The prediction service encountered an unexpected error.";
+                    }
+                } catch (error) {
+                    // 6. Handle network errors
+                    updateResultCard('error');
+                    resultText.textContent = "Connection Failed";
+                    resultDescription.textContent = "Could not reach the Python backend. Ensure 'python app.py' is running.";
+                    console.error("Fetch error:", error);
+                } finally {
+                    // 7. Restore button state
+                    predictButton.disabled = false;
+                    predictButton.textContent = "Predict Risk";
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
